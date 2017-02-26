@@ -31,16 +31,21 @@ sealed trait Signal
  * Lifecycle signal that is fired upon creation of the Actor. This will be the
  * first message that the actor processes.
  */
-@SerialVersionUID(1L)
-final case object PreStart extends Signal
+sealed abstract class PreStart extends Signal
+final case object PreStart extends PreStart {
+  def instance: PreStart = this
+}
 
 /**
  * Lifecycle signal that is fired upon restart of the Actor before replacing
  * the behavior with the fresh one (i.e. this signal is received within the
- * behavior that failed).
+ * behavior that failed). The replacement behavior will receive PreStart as its
+ * first signal.
  */
-@SerialVersionUID(1L)
-final case object PreRestart extends Signal
+sealed abstract class PreRestart extends Signal
+final case object PreRestart extends PreRestart {
+  def instance: PreRestart = this
+}
 
 /**
  * Lifecycle signal that is fired after this actor and all its child actors
@@ -51,8 +56,10 @@ final case object PreRestart extends Signal
  * `Stopped` behavior then this signal will be ignored (i.e. the
  * Stopped behavior will do nothing in reaction to it).
  */
-@SerialVersionUID(1L)
-final case object PostStop extends Signal
+sealed abstract class PostStop extends Signal
+final case object PostStop extends PostStop {
+  def instance: PostStop = this
+}
 
 /**
  * Lifecycle signal that is fired when an Actor that was watched has terminated.
@@ -64,7 +71,6 @@ final case object PostStop extends Signal
  * have occurred. Termination of a remote Actor can also be effected by declaring
  * the Actor’s home system as failed (e.g. as a result of being unreachable).
  */
-@SerialVersionUID(1L)
 final case class Terminated(ref: ActorRef[Nothing])(failed: Throwable) extends Signal {
   def wasFailed: Boolean = failed ne null
   def failure: Throwable = failed
